@@ -1,3 +1,4 @@
 torch>=2.5,<3
 pytest>=8,<10
 jupyter>=1,<2
+numpy>=1.26,<3
