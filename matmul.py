@@ -31,11 +31,13 @@
 # %%
 
 def vector_add(a, b):
-    """Додає два вектори поелементно."""
-
+    """додає два вектори поелементно"""
     if len(a) != len(b):
         raise ValueError("Вектори повинні мати однакову довжину")
-    return [x + y for x, y in zip(a, b)]
+    result = []
+    for i in range(len(a)):
+        result.append(a[i] + b[i])
+    return result
 
 # Питання:
 # - Скільки числових додавань використовується для векторів довжини n?
@@ -63,10 +65,13 @@ if __name__ == "__main__":
 # %%
 
 def dot(a, b):
-    """Скалярний добуток двох векторів."""
+    """рахує скалярний добуток"""
     if len(a) != len(b):
         raise ValueError("Вектори повинні мати однакову довжину")
-    return sum(x * y for x, y in zip(a, b))
+    result = 0
+    for i in range(len(a)):
+        result += a[i] * b[i]
+    return result
 
 # Питання:
 # - Скільки операцій множення та додавання виконується для векторів довжиною n?
@@ -180,14 +185,15 @@ if __name__ == "__main__":
 # %%
 
 def matvec(mat, vec):
-    """Матрично-векторний добуток."""
-
-    # Використати dot
+    """множить кожен рядок матриці на вектор"""
     if not mat:
         raise ValueError("Порожня матриця не задає кількість стовпців")
-    if any(len(row) != len(vec) for row in mat):
-        raise ValueError("Довжина кожного рядка має дорівнювати довжині вектора")
-    return [dot(row, vec) for row in mat]
+    result = []
+    for row in mat:
+        if len(row) != len(vec):
+            raise ValueError("Довжина кожного рядка має дорівнювати довжині вектора")
+        result.append(dot(row, vec))
+    return result
 
 
 def test_matvec():
@@ -287,17 +293,16 @@ if __name__ == "__main__":
 # %%
 
 def shape(tensor):
-    """Повертає форму тензора як tuple."""
-
-    # Для вкладених списків цю задачу зручно розв'язати рекурсивно.
+    """повертає розміри тензора"""
     if not isinstance(tensor, (list, tuple)):
         return ()
     if not tensor:
         return (0,)
-    first_shape = shape(tensor[0])
-    if any(shape(item) != first_shape for item in tensor[1:]):
-        raise ValueError("Усі вкладені елементи повинні мати однакову форму")
-    return (len(tensor),) + first_shape
+    inner_shape = shape(tensor[0])
+    for item in tensor[1:]:
+        if shape(item) != inner_shape:
+            raise ValueError("Усі вкладені елементи повинні мати однакову форму")
+    return (len(tensor),) + inner_shape
 
 
 def test_shape():
@@ -392,10 +397,9 @@ if __name__ == "__main__":
 # %%
 
 def linear(x, weight, bias):
-    """Застосовує лінійний шар: y = Wx + b."""
-
-    # Використайте минулі функції.
-    return vector_add(matvec(weight, x), bias)
+    """рахує один лінійний шар: Wx + b"""
+    result = matvec(weight, x)
+    return vector_add(result, bias)
 
 
 def test_linear():
@@ -498,20 +502,23 @@ if __name__ == "__main__":
 # %%
 
 def matmul(a, b):
-    """Множить матрицю a форми (m, n) на матрицю b форми (n, p)."""
-
-    # 1. Знайдіть форми a і b за допомогою shape та перевірте їх.
-    # 2. Використайте dot для кожної пари: рядок a та стовпець b.
+    """множить дві матриці"""
     a_shape = shape(a)
     b_shape = shape(b)
     if len(a_shape) != 2 or len(b_shape) != 2:
         raise ValueError("Обидва аргументи повинні бути матрицями")
-    m, n = a_shape
-    inner, p = b_shape
-    if n != inner:
+    rows_a, cols_a = a_shape
+    rows_b, cols_b = b_shape
+    if cols_a != rows_b:
         raise ValueError("Внутрішні розміри матриць повинні збігатися")
-    return [[dot(a[i], [b[k][j] for k in range(inner)])
-             for j in range(p)] for i in range(m)]
+    result = []
+    for row in a:
+        result_row = []
+        for j in range(cols_b):
+            column = [b[i][j] for i in range(rows_b)]
+            result_row.append(dot(row, column))
+        result.append(result_row)
+    return result
 
 
 def test_matmul():
@@ -611,13 +618,18 @@ if __name__ == "__main__":
 # %%
 
 def transpose(mat):
-    """Міняє рядки та стовпці матриці місцями."""
-
+    """міняє місцями рядки і стовпці"""
     matrix_shape = shape(mat)
     if len(matrix_shape) != 2:
         raise ValueError("Аргумент повинен бути матрицею")
     rows, columns = matrix_shape
-    return [[mat[i][j] for i in range(rows)] for j in range(columns)]
+    result = []
+    for j in range(columns):
+        column = []
+        for i in range(rows):
+            column.append(mat[i][j])
+        result.append(column)
+    return result
 
 
 def test_transpose():
@@ -698,14 +710,13 @@ if __name__ == "__main__":
 # %%
 
 def linear_batch(xs, weight, bias):
-    """Застосовує лінійний шар до батчу вхідних векторів."""
-
-    # 1. Транспонуйте weight за допомогою transpose.
-    # 2. Виконайте matmul(xs, weight_transposed).
-    # 3. Додайте bias до кожного рядка за допомогою vector_add.
+    """рахує лінійний шар для кількох векторів"""
     weight_transposed = transpose(weight)
     products = matmul(xs, weight_transposed)
-    return [vector_add(row, bias) for row in products]
+    result = []
+    for row in products:
+        result.append(vector_add(row, bias))
+    return result
 
 
 def test_linear_batch():
