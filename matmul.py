@@ -33,7 +33,7 @@
 def vector_add(a, b):
     """додає два вектори поелементно"""
     if len(a) != len(b):
-        raise ValueError("Вектори повинні мати однакову довжину")
+        raise ValueError("вектори різної довжини")
     result = []
     for i in range(len(a)):
         result.append(a[i] + b[i])
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 def dot(a, b):
     """рахує скалярний добуток"""
     if len(a) != len(b):
-        raise ValueError("Вектори повинні мати однакову довжину")
+        raise ValueError("вектори різної довжини")
     result = 0
     for i in range(len(a)):
         result += a[i] * b[i]
@@ -187,11 +187,11 @@ if __name__ == "__main__":
 def matvec(mat, vec):
     """множить кожен рядок матриці на вектор"""
     if not mat:
-        raise ValueError("Порожня матриця не задає кількість стовпців")
+        raise ValueError("матриця порожня")
     result = []
     for row in mat:
         if len(row) != len(vec):
-            raise ValueError("Довжина кожного рядка має дорівнювати довжині вектора")
+            raise ValueError("рядок і вектор різної довжини")
         result.append(dot(row, vec))
     return result
 
@@ -301,7 +301,7 @@ def shape(tensor):
     inner_shape = shape(tensor[0])
     for item in tensor[1:]:
         if shape(item) != inner_shape:
-            raise ValueError("Усі вкладені елементи повинні мати однакову форму")
+            raise ValueError("елементи різної форми")
     return (len(tensor),) + inner_shape
 
 
@@ -506,11 +506,11 @@ def matmul(a, b):
     a_shape = shape(a)
     b_shape = shape(b)
     if len(a_shape) != 2 or len(b_shape) != 2:
-        raise ValueError("Обидва аргументи повинні бути матрицями")
+        raise ValueError("треба дві матриці")
     rows_a, cols_a = a_shape
     rows_b, cols_b = b_shape
     if cols_a != rows_b:
-        raise ValueError("Внутрішні розміри матриць повинні збігатися")
+        raise ValueError("розміри матриць не підходять")
     result = []
     for row in a:
         result_row = []
@@ -621,7 +621,7 @@ def transpose(mat):
     """міняє місцями рядки і стовпці"""
     matrix_shape = shape(mat)
     if len(matrix_shape) != 2:
-        raise ValueError("Аргумент повинен бути матрицею")
+        raise ValueError("треба матрицю")
     rows, columns = matrix_shape
     result = []
     for j in range(columns):
