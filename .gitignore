@@ -5,3 +5,4 @@ __pycache__/
 .ipynb_checkpoints/
 *.py[cod]
 benchmark_results.json
+.report-build/

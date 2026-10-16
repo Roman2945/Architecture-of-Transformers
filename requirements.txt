@@ -1,4 +1,6 @@
-torch>=2.5,<3
 pytest>=8,<10
 jupyter>=1,<2
 numpy>=1.26,<3
+datasets>=4.0,<5
+tiktoken>=0.12,<1
+matplotlib>=3.9,<4
