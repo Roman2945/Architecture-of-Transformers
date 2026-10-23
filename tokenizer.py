@@ -446,28 +446,39 @@ MIXED_CASES = [
 
 
 def compare_mixed_cases(texts, tokenizers):
-    for text in texts:
-        print("\nТекст:", text)
-        for name, tokenize in tokenizers.items():
-            tokens = tokenize(text)
-            print(f"  {name:18} {len(tokens):3} токенів; {tokens[:12]}")
+    for index, text in enumerate(texts, 1):
+        print(f"{index}. {text}")
+    print()
+    print(f"{'tokenizer':<18}" + "".join((f"{i:>7}" for i in range(1, len(texts) + 1))))
+    for name, tokenize in tokenizers.items():
+        counts = [len(tokenize(text)) for text in texts]
+        print(f"{name:<18}" + "".join((f"{count:>7}" for count in counts)))
 
 
 if __name__ == "__main__":
     test_word_tokenize()
     print("✓ word_tokenize")
+    print(word_tokenize("Комп’ютер навчається!"))
     test_word_vocab()
     print("✓ word vocabulary")
+    demo_word_vocab = build_word_vocab(["Кіт спить.", "Пес спить."])
+    print("Кіт біжить. →", encode_words("Кіт біжить.", demo_word_vocab))
     test_ngrams()
     print("✓ character n-grams")
+    print("Триграми:", char_ngrams("кіт", 3))
+    print("Шестиграми з padding:", char_ngrams("кіт", 6))
     test_ngram_vocab()
     print("✓ n-gram vocabulary")
     test_bpe()
     print("✓ BPE")
+    demo_merges = train_bpe(["мама мама мала тон"], 3)
+    print("BPE, мамонт:", apply_bpe("мамонт", demo_merges))
     test_average_bpe_length()
     print("✓ BPE reduces average sequence length")
     test_wordpiece()
     print("✓ WordPiece")
+    demo_wordpiece = train_wordpiece(["мама мама мала тон"], 30)
+    print("WordPiece, мамонт:", apply_wordpiece("мамонт", demo_wordpiece))
     flores = load_flores_dev()
     assert all((len(texts) == 997 for texts in flores.values()))
     train_texts = [
@@ -564,3 +575,7 @@ if __name__ == "__main__":
     fig.colorbar(image, ax=ax, label="токенів на слово", shrink=0.85)
     plt.show()
     compare_mixed_cases(MIXED_CASES, tokenizers_to_compare)
+    for text in ["токенізація", "Київ თბილისი 🌍"]:
+        print("\nТекст:", text)
+        print("BPE-2000:", apply_bpe_to_text(text, bpe_models[2000]))
+        print("WordPiece-2000:", apply_wordpiece_to_text(text, wordpiece_models[2000]))
